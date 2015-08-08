@@ -113,11 +113,15 @@ namespace detail {
     enum class zero_or_one : std::uint8_t { zero = 0, one = 1 };
 }  // namespace detail
 
-
     // TODO, fiture out how to use private inheritance without obstructing tests
     class id final : public detail::lw_intrusive_tree<id, detail::zero_or_one> {
+        using id_tree = detail::lw_intrusive_tree<id, detail::zero_or_one>;
     public:
         id() = default;
+        explicit id(detail::zero_or_one val) : id_tree(val) {}
+
+        static id one();
+        static id zero();
 
         ///
         /// norm (0, 0) = 0
@@ -147,6 +151,9 @@ namespace detail {
             }
         }
     };
+
+    id id::zero() { return id{detail::zero_or_one::zero}; }
+    id id::one() { return id{detail::zero_or_one::one}; }
 
     class event : private detail::intrusive_tree<event> {
     public:
