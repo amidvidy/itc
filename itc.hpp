@@ -32,7 +32,7 @@ namespace detail {
     private:
         template <typename, typename>
         friend class lw_intrusive_tree;
-        
+
         std::unique_ptr<T> _left;
         std::unique_ptr<T> _right;
     };
@@ -47,7 +47,7 @@ namespace detail {
         using internal_node_type = intrusive_tree<T>;
 
         lw_intrusive_tree(): lw_intrusive_tree(leaf_node_type()) {}
-        
+
         lw_intrusive_tree(leaf_node_type val): _is_leaf{true} {
             new (&_storage) leaf_node_type (std::move(val));
         }
@@ -79,7 +79,7 @@ namespace detail {
 
         leaf_node_type& leaf() { return *reinterpret_cast<leaf_node_type*>(&_storage); }
         internal_node_type& internal() { return *reinterpret_cast<internal_node_type*>(&_storage); }
-        
+
     private:
 
         void _ensure_internal_node(internal_node_type node = internal_node_type()) {
@@ -105,7 +105,7 @@ namespace detail {
         void _destroy_internal() {
             internal().~internal_node_type();
         }
-        
+
         bool _is_leaf;
         typename std::aligned_union<2, leaf_node_type, internal_node_type>::type _storage;
     };
@@ -114,22 +114,17 @@ namespace detail {
 }  // namespace detail
 
 
-    class id final : private detail::lw_intrusive_tree<id, detail::zero_or_one> {
+    // TODO, fiture out how to use private inheritance without obstructing tests
+    class id final : public detail::lw_intrusive_tree<id, detail::zero_or_one> {
     public:
         id() = default;
-
-    private:
-
-        //static id _normalized(id&& id) {
-        //}
 
         ///
         /// norm (0, 0) = 0
         /// norm (1, 1) = 1
         /// norm (i) = i
         ///
-        void _normalize() {
-
+        void normalize() {
             if (is_leaf()) {
                 return;
             }
@@ -137,13 +132,13 @@ namespace detail {
             bool has_left = internal().has_left();
             bool has_right = internal().has_right();
 
-            if (has_left) { internal().get_left()->_normalize(); } 
-            if (has_right) { internal().get_right()->_normalize(); } 
+            if (has_left) { internal().get_left()->normalize(); }
+            if (has_right) { internal().get_right()->normalize(); }
 
             if (!has_left || !has_right) {
                 return;
             }
-            
+
             auto left = internal().get_left();
             auto right = internal().get_right();
 
@@ -151,7 +146,6 @@ namespace detail {
                 set_value(std::move(left->leaf()));
             }
         }
-
     };
 
     class event : private detail::intrusive_tree<event> {
@@ -164,7 +158,7 @@ namespace detail {
 
     class stamp {
     public:
-        
+
         // stamp() {
         // }
 
@@ -172,7 +166,7 @@ namespace detail {
         // }
 
         // std::tuple<stamp, stamp> fork() {
-            
+
         // }
 
         // stamp event() {
@@ -183,5 +177,5 @@ namespace detail {
         class event _event;
         id _id;
     };
-    
+
 }  // namespace itc
