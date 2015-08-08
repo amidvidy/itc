@@ -64,6 +64,7 @@ namespace detail {
 
         void set_value(leaf_node_type value) {
             _ensure_leaf_node();
+            leaf() = std::move(value);
         }
 
         bool is_leaf() { return _is_leaf; }
